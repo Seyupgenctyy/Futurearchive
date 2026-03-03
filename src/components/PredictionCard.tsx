@@ -24,6 +24,8 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
     correct: p.votes_correct || 0,
     wrong: p.votes_wrong || 0
   })
+  const [reported, setReported] = useState(false)
+  const [showReportMenu, setShowReportMenu] = useState(false)
 
   const handleVote = async (type: 'correct' | 'wrong') => {
     if (voted) return
@@ -42,6 +44,20 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
       ...prev,
       [type]: prev[type] + 1
     }))
+  }
+
+  const handleReport = async (reason: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await supabase.from('reports').insert({
+      reporter_id: user.id,
+      prediction_id: p.id,
+      reason
+    })
+
+    setReported(true)
+    setShowReportMenu(false)
   }
 
   const statusColors: Record<string, string> = {
@@ -68,6 +84,35 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
           <span className={`text-xs px-2 py-1 rounded-full ${statusColors[p.status] || statusColors.active}`}>
             {p.status === 'pending_payment' ? '⏳ pending' : p.status}
           </span>
+          {/* Report butonu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowReportMenu(!showReportMenu)}
+              className="text-gray-600 hover:text-gray-400 transition text-xs px-1"
+            >
+              ⋯
+            </button>
+            {showReportMenu && (
+              <div className="absolute right-0 top-6 bg-[#1a1a2e] border border-white/10 rounded-lg p-2 z-10 min-w-40">
+                {reported ? (
+                  <p className="text-xs text-gray-400 px-2 py-1">✅ Reported</p>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500 px-2 py-1 mb-1">Report this prediction</p>
+                    {['Spam', 'Inappropriate', 'Misleading', 'Other'].map(reason => (
+                      <button
+                        key={reason}
+                        onClick={() => handleReport(reason)}
+                        className="block w-full text-left text-xs text-gray-400 hover:text-white px-2 py-1.5 rounded hover:bg-white/5 transition"
+                      >
+                        {reason}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

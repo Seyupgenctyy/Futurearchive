@@ -10,7 +10,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<any>(null)
   const [predictions, setPredictions] = useState<any[]>([])
   const [rank, setRank] = useState<number>(0)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+  const [profileCopied, setProfileCopied] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -34,7 +35,6 @@ export default function Profile() {
 
       if (predictionsData) setPredictions(predictionsData)
 
-      // Leaderboard sıralaması
       const { data: allProfiles } = await supabase
         .from('profiles')
         .select('id, prophet_score')
@@ -68,11 +68,25 @@ export default function Profile() {
   }
 
   const handleShareProfile = () => {
-    navigator.clipboard.writeText(
-      `Check out my FutureArchive profile!\n@${profile?.username}\nProphet Score: ${profile?.prophet_score}\nAccuracy: ${accuracy}%\nfuturearchive.com`
-    )
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const text = `Check out my FutureArchive profile!\n@${profile?.username}\nProphet Score: ${profile?.prophet_score}\nAccuracy: ${accuracy}%\nGlobal Rank: #${rank}\n\n👉 futurearchive.vercel.app`
+    if (navigator.share) {
+      navigator.share({ title: 'My FutureArchive Profile', text, url: 'https://futurearchive.vercel.app' })
+    } else {
+      navigator.clipboard.writeText(text)
+      setProfileCopied(true)
+      setTimeout(() => setProfileCopied(false), 2000)
+    }
+  }
+
+  const handleSharePrediction = (p: any) => {
+    const text = `🎯 I predicted this on FutureArchive!\n\n"${p.text}"\n\nCategory: ${p.category}\nTarget Date: ${p.target_date}\nProphet Score: ${profile?.prophet_score} pts\n\n👉 futurearchive.vercel.app`
+    if (navigator.share) {
+      navigator.share({ title: 'I predicted this on FutureArchive!', text, url: 'https://futurearchive.vercel.app' })
+    } else {
+      navigator.clipboard.writeText(text)
+      setCopied(p.id)
+      setTimeout(() => setCopied(null), 2000)
+    }
   }
 
   const badges = getBadges()
@@ -95,7 +109,7 @@ export default function Profile() {
               onClick={handleShareProfile}
               className="text-xs border border-white/10 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:border-white/30 transition"
             >
-              {copied ? '✅ Copied!' : '🔗 Share Profile'}
+              {profileCopied ? '✅ Copied!' : '🔗 Share Profile'}
             </button>
           </div>
 
@@ -165,14 +179,10 @@ export default function Profile() {
                   {p.status === 'correct' && (
                     <div className="mt-2 flex justify-end">
                       <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            `🎯 I predicted this on FutureArchive!\n\n"${p.text}"\n\nCategory: ${p.category} | Date: ${p.target_date}\n\nfuturearchive.com`
-                          )
-                        }}
+                        onClick={() => handleSharePrediction(p)}
                         className="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-lg hover:bg-green-500/30 transition"
                       >
-                        🔗 Share this prediction
+                        {copied === p.id ? '✅ Copied!' : '🔗 Share this prediction'}
                       </button>
                     </div>
                   )}

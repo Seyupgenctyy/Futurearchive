@@ -123,6 +123,9 @@ export default function Home() {
           <Link href="/unlocked" className="text-gray-400 hover:text-white transition text-sm">
             {lang === 'EN' ? 'Unlocked Today' : 'Bugün Açılanlar'}
           </Link>
+          <Link href="/weekly" className="text-gray-400 hover:text-white transition text-sm">
+            {lang === 'EN' ? 'Weekly Top 10' : 'Haftalık Top 10'}
+          </Link>
           {user ? (
             <div className="flex items-center gap-4">
               <Link href="/profile" className="text-gray-400 text-sm hover:text-white transition">

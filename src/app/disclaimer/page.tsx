@@ -1,5 +1,8 @@
 import Link from 'next/link'
-
+export const metadata = {
+  title: "Legal Disclaimer — FutureArchive",
+  description: "FutureArchive is not a gambling platform. Payment is a publishing and archiving fee.",
+}
 export default function Disclaimer() {
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white px-4 py-12">

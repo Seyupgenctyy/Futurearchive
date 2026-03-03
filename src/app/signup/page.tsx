@@ -35,7 +35,12 @@ export default function SignUp() {
         setLoading(false)
         return
       }
-
+      // Welcome email gönder
+    await fetch('/api/email', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ type: 'welcome', email, username })
+         })   
       setMessage('Account created! Please check your email to confirm.')
     }
 

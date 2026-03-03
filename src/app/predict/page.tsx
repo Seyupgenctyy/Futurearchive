@@ -51,7 +51,18 @@ export default function Predict() {
       setLoading(false)
       return
     }
-
+    // Archived email gönder
+  await fetch('/api/email', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    type: 'archived',
+    email: user.email,
+    username: user.email?.split('@')[0],
+    predictionText: text,
+    targetDate: targetDate
+  })
+})
     router.push('/predict/success')
     setLoading(false)
   }

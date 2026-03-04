@@ -48,26 +48,17 @@ export default function Admin() {
   }
 
   const handleVerdict = async (id: string, isCorrect: boolean) => {
-    setLoading(true)
-    const newStatus = isCorrect ? 'correct' : 'wrong'
-    const scoreChange = isCorrect ? 10 : -5
+  setLoading(true)
+  const newStatus = isCorrect ? 'correct' : 'wrong'
 
-    await supabase
-      .from('predictions')
-      .update({ status: newStatus })
-      .eq('id', id)
+  await supabase
+    .from('predictions')
+    .update({ status: newStatus })
+    .eq('id', id)
 
-    const pred = predictions.find(p => p.id === id)
-    if (pred) {
-      await supabase.rpc('increment_score', {
-        user_id: pred.user_id,
-        amount: scoreChange
-      })
-    }
-
-    setPredictions(prev => prev.filter(p => p.id !== id))
-    setLoading(false)
-  }
+  setPredictions(prev => prev.filter(p => p.id !== id))
+  setLoading(false)
+}
 
   const handleDelete = async (id: string) => {
     await supabase.from('predictions').delete().eq('id', id)

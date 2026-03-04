@@ -129,20 +129,16 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
-              <div className="text-xl font-bold">{totalPredictions}</div>
-              <div className="text-gray-500 text-xs mt-1">Total</div>
-            </div>
-            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
-              <div className="text-xl font-bold text-green-400">{correctPredictions}</div>
-              <div className="text-gray-500 text-xs mt-1">Correct</div>
-            </div>
-            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
-              <div className="text-xl font-bold text-red-400">{wrongPredictions}</div>
-              <div className="text-gray-500 text-xs mt-1">Wrong</div>
-            </div>
-          </div>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
+             <div className="text-3xl font-bold">#{rank || '?'}</div>
+             <div className="text-gray-500 text-xs mt-1">Global Rank</div>
+           </div>
+          <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
+            <div className="text-3xl font-bold">{accuracy}%</div>
+              <div className="text-gray-500 text-xs mt-1">Accuracy</div>
+             </div>
+           </div>
         </div>
 
         {/* Rozetler */}

@@ -49,7 +49,12 @@ const content = {
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
-  const [lang, setLang] = useState<'EN' | 'TR'>('EN')
+  const [lang, setLang] = useState<'EN' | 'TR'>(() => {
+  if (typeof window !== 'undefined') {
+    return (localStorage.getItem('lang') as 'EN' | 'TR') || 'EN'
+  }
+  return 'EN'
+})
   const [predictions, setPredictions] = useState<any[]>([])
   const [unlocked, setUnlocked] = useState<any[]>([])
   const [prophets, setProphets] = useState<any[]>([])
@@ -109,7 +114,11 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-6">
           <button
-            onClick={() => setLang(lang === 'EN' ? 'TR' : 'EN')}
+            onClick={() => {
+            const newLang = lang === 'EN' ? 'TR' : 'EN'
+            setLang(newLang)
+            localStorage.setItem('lang', newLang)
+                  }}
             className="text-gray-400 hover:text-white transition text-sm border border-white/10 px-3 py-1 rounded-lg"
           >
             {lang === 'EN' ? '🇹🇷 TR' : '🇬🇧 EN'}

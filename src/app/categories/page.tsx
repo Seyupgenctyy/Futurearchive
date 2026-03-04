@@ -21,6 +21,12 @@ export default function Categories() {
   const [predictions, setPredictions] = useState<any[]>([])
   const [prophets, setProphets] = useState<any[]>([])
   const [langFilter, setLangFilter] = useState<'ALL' | 'EN' | 'TR'>('ALL')
+  const [lang, setLang] = useState<'EN' | 'TR'>('EN')
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
+    if (savedLang) setLang(savedLang)
+  }, [])
 
   useEffect(() => {
     fetchPredictions()
@@ -56,7 +62,6 @@ export default function Categories() {
         if (p.profiles) {
           const key = p.user_id
           if (!scoreMap[key]) scoreMap[key] = p.profiles
-          else scoreMap[key].prophet_score += p.profiles.prophet_score
         }
       })
       const sorted = Object.values(scoreMap)
@@ -70,13 +75,12 @@ export default function Categories() {
     <main className="min-h-screen bg-[#0a0a0f] text-white px-4 py-12">
       <div className="max-w-3xl mx-auto">
         <Link href="/" className="text-gray-500 text-sm hover:text-white transition mb-8 block">
-          ← Back to FutureArchive
+          ← {lang === 'EN' ? 'Back to FutureArchive' : 'FutureArchive\'e Dön'}
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2">Categories</h1>
-        <p className="text-gray-400 mb-8">Browse predictions by category.</p>
+        <h1 className="text-3xl font-bold mb-2">{lang === 'EN' ? 'Categories' : 'Kategoriler'}</h1>
+        <p className="text-gray-400 mb-8">{lang === 'EN' ? 'Browse predictions by category.' : 'Tahminleri kategoriye göre gözat.'}</p>
 
-        {/* Kategori Butonları */}
         <div className="flex flex-wrap gap-2 mb-6">
           {allCategories.map((cat) => (
             <button
@@ -93,7 +97,6 @@ export default function Categories() {
           ))}
         </div>
 
-        {/* Dil Filtresi */}
         <div className="flex gap-2 mb-8">
           {['ALL', 'EN', 'TR'].map((l) => (
             <button
@@ -110,11 +113,10 @@ export default function Categories() {
           ))}
         </div>
 
-        {/* Top Prophets */}
         {prophets.length > 0 && (
           <div className="border border-white/10 rounded-xl p-5 bg-white/5 mb-8">
             <h2 className="text-sm font-semibold text-gray-400 mb-3">
-              🏆 Top Prophets in {selected}
+              🏆 {lang === 'EN' ? `Top Prophets in ${selected}` : `${selected} Kategorisinde En İyi Peygamberler`}
             </h2>
             <div className="flex flex-col gap-2">
               {prophets.map((p: any, i) => (
@@ -130,10 +132,11 @@ export default function Categories() {
           </div>
         )}
 
-        {/* Tahminler */}
         <div className="flex flex-col gap-4">
           {predictions.length === 0 ? (
-            <p className="text-gray-500 text-center py-10">No predictions in this category yet.</p>
+            <p className="text-gray-500 text-center py-10">
+              {lang === 'EN' ? 'No predictions in this category yet.' : 'Bu kategoride henüz tahmin yok.'}
+            </p>
           ) : (
             predictions.map((p) => (
               <PredictionCard key={p.id} prediction={p} showVotes={true} />

@@ -5,8 +5,12 @@ import Link from 'next/link'
 
 export default function Leaderboard() {
   const [prophets, setProphets] = useState<any[]>([])
+  const [lang, setLang] = useState<'EN' | 'TR'>('EN')
 
   useEffect(() => {
+    const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
+    if (savedLang) setLang(savedLang)
+
     supabase
       .from('profiles')
       .select('username, prophet_score')
@@ -23,15 +27,15 @@ export default function Leaderboard() {
     <main className="min-h-screen bg-[#0a0a0f] text-white px-4 py-12">
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="text-gray-500 text-sm hover:text-white transition mb-8 block">
-          ← Back to FutureArchive
+          ← {lang === 'EN' ? 'Back to FutureArchive' : 'FutureArchive\'e Dön'}
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2">Top Prophets</h1>
-        <p className="text-gray-400 mb-8">The most accurate predictors in the archive.</p>
+        <h1 className="text-3xl font-bold mb-2">{lang === 'EN' ? 'Top Prophets' : 'En İyi Peygamberler'}</h1>
+        <p className="text-gray-400 mb-8">{lang === 'EN' ? 'The most accurate predictors in the archive.' : 'Arşivdeki en doğru tahmin edenler.'}</p>
 
         <div className="flex flex-col gap-3">
           {prophets.length === 0 ? (
-            <p className="text-gray-500 text-center py-10">No prophets yet. Make a prediction!</p>
+            <p className="text-gray-500 text-center py-10">{lang === 'EN' ? 'No prophets yet.' : 'Henüz peygamber yok.'}</p>
           ) : (
             prophets.map((p, i) => (
               <div key={p.username} className="flex items-center justify-between border border-white/10 rounded-xl px-5 py-4 bg-white/5 hover:border-white/20 transition">

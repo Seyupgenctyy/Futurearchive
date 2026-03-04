@@ -49,12 +49,12 @@ const content = {
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
-  const [lang, setLang] = useState<'EN' | 'TR'>(() => {
-  if (typeof window !== 'undefined') {
-    return (localStorage.getItem('lang') as 'EN' | 'TR') || 'EN'
-  }
-  return 'EN'
-})
+  const [lang, setLang] = useState<'EN' | 'TR'>('EN')
+
+useEffect(() => {
+  const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
+  if (savedLang) setLang(savedLang)
+}, [])
   const [predictions, setPredictions] = useState<any[]>([])
   const [unlocked, setUnlocked] = useState<any[]>([])
   const [prophets, setProphets] = useState<any[]>([])

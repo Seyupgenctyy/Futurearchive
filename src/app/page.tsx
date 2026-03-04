@@ -51,16 +51,17 @@ const content = {
 export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [lang, setLang] = useState<'EN' | 'TR'>('EN')
-
-useEffect(() => {
-  const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
-  if (savedLang) setLang(savedLang)
-}, [])
   const [predictions, setPredictions] = useState<any[]>([])
   const [unlocked, setUnlocked] = useState<any[]>([])
   const [prophets, setProphets] = useState<any[]>([])
   const [totalPredictions, setTotalPredictions] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = content[lang]
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
+    if (savedLang) setLang(savedLang)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
@@ -68,7 +69,6 @@ useEffect(() => {
       setUser(session?.user ?? null)
     })
 
-    // Son tahminler
     supabase
       .from('predictions')
       .select('*, profiles(username)')
@@ -77,7 +77,6 @@ useEffect(() => {
       .limit(5)
       .then(({ data }) => { if (data) setPredictions(data) })
 
-    // Bugün açılanlar
     const today = new Date().toISOString().split('T')[0]
     supabase
       .from('predictions')
@@ -85,27 +84,25 @@ useEffect(() => {
       .eq('target_date', today)
       .then(({ data }) => { if (data) setUnlocked(data) })
 
-    // Top prophets
-supabase
-  .from('predictions')
-  .select('user_id, profiles(username)')
-  .eq('status', 'correct')
-  .then(({ data }) => {
-    if (!data) return
-    const countMap: Record<string, { username: string; correct: number }> = {}
-    data.forEach((p: any) => {
-      if (!p.profiles) return
-      const key = p.user_id
-      if (!countMap[key]) countMap[key] = { username: p.profiles.username, correct: 0 }
-      countMap[key].correct += 1
-    })
-    const sorted = Object.values(countMap)
-      .sort((a, b) => b.correct - a.correct)
-      .slice(0, 5)
-    setProphets(sorted)
-  })
+    supabase
+      .from('predictions')
+      .select('user_id, profiles(username)')
+      .eq('status', 'correct')
+      .then(({ data }) => {
+        if (!data) return
+        const countMap: Record<string, { username: string; correct: number }> = {}
+        data.forEach((p: any) => {
+          if (!p.profiles) return
+          const key = p.user_id
+          if (!countMap[key]) countMap[key] = { username: p.profiles.username, correct: 0 }
+          countMap[key].correct += 1
+        })
+        const sorted = Object.values(countMap)
+          .sort((a, b) => b.correct - a.correct)
+          .slice(0, 5)
+        setProphets(sorted)
+      })
 
-    // Total count
     supabase
       .from('predictions')
       .select('id', { count: 'exact' })
@@ -120,18 +117,20 @@ supabase
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10">
+      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10 relative">
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold tracking-tight">FutureArchive</span>
           <span className="text-xs bg-white/10 px-2 py-1 rounded-full text-gray-400">BETA</span>
         </div>
-        <div className="flex items-center gap-6">
+
+        {/* Desktop Menü */}
+        <div className="hidden md:flex items-center gap-6">
           <button
             onClick={() => {
-            const newLang = lang === 'EN' ? 'TR' : 'EN'
-            setLang(newLang)
-            localStorage.setItem('lang', newLang)
-                  }}
+              const newLang = lang === 'EN' ? 'TR' : 'EN'
+              setLang(newLang)
+              localStorage.setItem('lang', newLang)
+            }}
             className="text-gray-400 hover:text-white transition text-sm border border-white/10 px-3 py-1 rounded-lg"
           >
             {lang === 'EN' ? '🇹🇷 TR' : '🇬🇧 EN'}
@@ -151,11 +150,11 @@ supabase
           {user ? (
             <div className="flex items-center gap-4">
               <NotificationBell userId={user.id} />
-            <Link href="/profile" className="flex items-center gap-2 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 transition">
-            <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">
-            {user.email?.charAt(0).toUpperCase()}
-           </div>
-             <span className="text-sm text-gray-400">@{user.email?.split('@')[0]}</span>
+              <Link href="/profile" className="flex items-center gap-2 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 transition">
+                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">
+                  {user.email?.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm text-gray-400">@{user.email?.split('@')[0]}</span>
               </Link>
               <button onClick={handleLogout} className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
                 {lang === 'EN' ? 'Sign Out' : 'Çıkış'}
@@ -167,6 +166,63 @@ supabase
             </Link>
           )}
         </div>
+
+        {/* Mobil Sağ */}
+        <div className="flex md:hidden items-center gap-3">
+          {user && <NotificationBell userId={user.id} />}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-gray-400 hover:text-white transition text-xl p-1"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+
+        {/* Mobil Menü */}
+        {mobileMenuOpen && (
+          <div className="absolute top-full left-0 right-0 bg-[#0a0a0f] border-b border-white/10 px-6 py-4 flex flex-col gap-4 md:hidden z-50">
+            <button
+              onClick={() => {
+                const newLang = lang === 'EN' ? 'TR' : 'EN'
+                setLang(newLang)
+                localStorage.setItem('lang', newLang)
+                setMobileMenuOpen(false)
+              }}
+              className="text-gray-400 text-sm text-left"
+            >
+              {lang === 'EN' ? '🇹🇷 TR' : '🇬🇧 EN'}
+            </button>
+            <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
+              {lang === 'EN' ? 'Categories' : 'Kategoriler'}
+            </Link>
+            <Link href="/leaderboard" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
+              {lang === 'EN' ? 'Leaderboard' : 'Sıralama'}
+            </Link>
+            <Link href="/unlocked" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
+              {lang === 'EN' ? 'Unlocked Today' : 'Bugün Açılanlar'}
+            </Link>
+            <Link href="/weekly" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
+              {lang === 'EN' ? 'Weekly Top 10' : 'Haftalık Top 10'}
+            </Link>
+            {user ? (
+              <>
+                <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
+                  @{user.email?.split('@')[0]}
+                </Link>
+                <button
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false) }}
+                  className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium text-left w-full"
+                >
+                  {lang === 'EN' ? 'Sign Out' : 'Çıkış'}
+                </button>
+              </>
+            ) : (
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium text-center">
+                {lang === 'EN' ? 'Sign In' : 'Giriş Yap'}
+              </Link>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
@@ -243,8 +299,8 @@ supabase
         <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
         <div className="flex flex-col gap-4">
           {predictions.map((p) => (
-              <PredictionCard key={p.id} prediction={p} showVotes={true} />
-         ))}
+            <PredictionCard key={p.id} prediction={p} showVotes={true} />
+          ))}
         </div>
       </section>
 
@@ -260,8 +316,8 @@ supabase
                 <div className="flex items-center gap-3">
                   <span className="text-lg">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
                   <Link href={`/profile/${p.username}`} className="text-sm font-medium hover:text-gray-300 transition">
-                     @{p.username}
-                 </Link>
+                    @{p.username}
+                  </Link>
                 </div>
                 <span className="text-green-400 text-xs">✅ {p.correct} correct</span>
               </div>
@@ -277,12 +333,12 @@ supabase
 
       {/* Footer */}
       <footer className="border-t border-white/10 text-center py-8 text-gray-600 text-sm">
-           FutureArchive — {lang === 'EN' ? 'This is not gambling. Payment is a publishing fee.' : 'Bu kumar değildir. Ödeme bir yayın ücretidir.'} <br />
-           <Link href="/disclaimer" className="text-gray-600 hover:text-gray-400 transition underline">
-           Legal Disclaimer
-         </Link>
+        FutureArchive — {lang === 'EN' ? 'This is not gambling. Payment is a publishing fee.' : 'Bu kumar değildir. Ödeme bir yayın ücretidir.'} <br />
+        <Link href="/disclaimer" className="text-gray-600 hover:text-gray-400 transition underline">
+          Legal Disclaimer
+        </Link>
         {' · '}© 2026 FutureArchive. All rights reserved.
-       </footer>
+      </footer>
     </main>
   )
 }

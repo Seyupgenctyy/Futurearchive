@@ -149,8 +149,11 @@ supabase
           </Link>
           {user ? (
             <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-gray-400 text-sm hover:text-white transition">
-                @{user.email?.split('@')[0]}
+            <Link href="/profile" className="flex items-center gap-2 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 transition">
+            <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">
+            {user.email?.charAt(0).toUpperCase()}
+           </div>
+             <span className="text-sm text-gray-400">@{user.email?.split('@')[0]}</span>
               </Link>
               <button onClick={handleLogout} className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
                 {lang === 'EN' ? 'Sign Out' : 'Çıkış'}

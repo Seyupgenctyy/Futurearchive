@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
@@ -14,58 +14,67 @@ interface PredictionCardProps {
     status: string
     votes_correct: number
     votes_wrong: number
+    user_id?: string
     profiles?: { username: string }
   }
   showVotes?: boolean
+  onDelete?: (id: string) => void
 }
 
-export default function PredictionCard({ prediction: p, showVotes = true }: PredictionCardProps) {
+export default function PredictionCard({ prediction: p, showVotes = true, onDelete }: PredictionCardProps) {
   const [voted, setVoted] = useState(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(`voted_${p.id}`) === 'true'
-  }
-  return false
-})
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`voted_${p.id}`) === 'true'
+    }
+    return false
+  })
   const [votes, setVotes] = useState({
     correct: p.votes_correct || 0,
     wrong: p.votes_wrong || 0
   })
   const [reported, setReported] = useState(false)
   const [showReportMenu, setShowReportMenu] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [deleted, setDeleted] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setCurrentUserId(data.user.id)
+    })
+  }, [])
 
   const handleVote = async (type: 'correct' | 'wrong') => {
     if (voted) return
     setVoted(true)
     localStorage.setItem(`voted_${p.id}`, 'true')
-
     const update = type === 'correct'
       ? { votes_correct: votes.correct + 1 }
       : { votes_wrong: votes.wrong + 1 }
-
-    await supabase
-      .from('predictions')
-      .update(update)
-      .eq('id', p.id)
-
-    setVotes(prev => ({
-      ...prev,
-      [type]: prev[type] + 1
-    }))
+    await supabase.from('predictions').update(update).eq('id', p.id)
+    setVotes(prev => ({ ...prev, [type]: prev[type] + 1 }))
   }
 
   const handleReport = async (reason: string) => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     await supabase.from('reports').insert({
       reporter_id: user.id,
       prediction_id: p.id,
       reason
     })
-
     setReported(true)
     setShowReportMenu(false)
   }
+
+  const handleDelete = async () => {
+    await supabase.from('predictions').delete().eq('id', p.id)
+    setDeleted(true)
+    setShowReportMenu(false)
+    if (onDelete) onDelete(p.id)
+  }
+
+  const isOwner = currentUserId && p.user_id && currentUserId === p.user_id
 
   const statusColors: Record<string, string> = {
     correct: 'bg-green-500/20 text-green-400',
@@ -74,13 +83,15 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
     pending_payment: 'bg-yellow-500/20 text-yellow-400',
   }
 
+  if (deleted) return null
+
   return (
     <div className="border border-white/10 rounded-xl p-5 hover:border-white/20 transition bg-white/5">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-500">
+        <Link href={`/profile/${p.profiles?.username}`} className="text-xs text-gray-500 hover:text-gray-300 transition">
           @{p.profiles?.username || 'anonymous'}
-        </span>
+        </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-600 border border-white/10 px-2 py-0.5 rounded-full">
             {p.language}
@@ -91,7 +102,8 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
           <span className={`text-xs px-2 py-1 rounded-full ${statusColors[p.status] || statusColors.active}`}>
             {p.status === 'pending_payment' ? '⏳ pending' : p.status}
           </span>
-          {/* Report butonu */}
+
+          {/* Üç nokta menüsü */}
           <div className="relative">
             <button
               onClick={() => setShowReportMenu(!showReportMenu)}
@@ -101,11 +113,37 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
             </button>
             {showReportMenu && (
               <div className="absolute right-0 top-6 bg-[#1a1a2e] border border-white/10 rounded-lg p-2 z-10 min-w-40">
-                {reported ? (
+                {showDeleteConfirm ? (
+                  <div className="px-2 py-1">
+                    <p className="text-xs text-gray-400 mb-2">Are you sure?</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDelete}
+                        className="flex-1 text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/30 transition"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="flex-1 text-xs text-gray-400 border border-white/10 px-2 py-1 rounded hover:bg-white/5 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : reported ? (
                   <p className="text-xs text-gray-400 px-2 py-1">✅ Reported</p>
                 ) : (
                   <>
-                    <p className="text-xs text-gray-500 px-2 py-1 mb-1">Report this prediction</p>
+                    {isOwner && (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="block w-full text-left text-xs text-red-400 hover:text-red-300 px-2 py-1.5 rounded hover:bg-white/5 transition"
+                      >
+                        🗑 Delete
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-500 px-2 py-1 mb-1">Report</p>
                     {['Spam', 'Inappropriate', 'Misleading', 'Other'].map(reason => (
                       <button
                         key={reason}
@@ -131,8 +169,8 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
         </div>
       ) : (
         <Link href={`/prediction/${p.id}`} className="text-white leading-relaxed hover:text-gray-300 transition cursor-pointer block">
-           {p.text}
-      </Link>
+          {p.text}
+        </Link>
       )}
 
       {/* Footer */}

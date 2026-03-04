@@ -27,11 +27,11 @@ export default function Profile() {
 
       if (profileData) setProfile(profileData)
 
-      const { data: predictionsData } = await supabase
-        .from('predictions')
-        .select('*, profiles(username)')
-        .eq('user_id', data.user.id)
-        .order('created_at', { ascending: false })
+     const { data: predictionsData } = await supabase
+       .from('predictions')
+       .select('*, profiles(username), user_id')
+      .eq('user_id', data.user.id)
+       .order('created_at', { ascending: false })
 
       if (predictionsData) setPredictions(predictionsData)
 
@@ -177,7 +177,11 @@ export default function Profile() {
               .filter(p => p.status !== 'pending_payment')
               .map((p) => (
                 <div key={p.id}>
-                  <PredictionCard prediction={p} showVotes={false} />
+                  <PredictionCard
+                     prediction={{...p, user_id: p.user_id}}
+                     showVotes={false}
+                     onDelete={(id) => setPredictions(prev => prev.filter(p => p.id !== id))}
+                  />
                   {p.status === 'correct' && (
                     <div className="mt-2 flex justify-end">
                       <button

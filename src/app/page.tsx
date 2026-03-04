@@ -40,10 +40,10 @@ const content = {
     ],
     recentTitle: 'Son Tahminler',
     unlockedTitle: '🔓 Bugün Açılanlar',
-    leaderTitle: '⚡ En İyi Peygamberler',
+    leaderTitle: '⚡ En İyi Vizyonerler',
     noUnlocked: 'Bugün açılan tahmin yok.',
-    noProphets: 'Henüz peygamber yok.',
-    stats: ['Arşivlenen Tahmin', 'Aktif Peygamber', 'Bugün Açılan'],
+    noProphets: 'Henüz Vizyoner yok.',
+    stats: ['Arşivlenen Tahmin', 'Aktif Vizyoner', 'Bugün Açılan'],
   }
 }
 

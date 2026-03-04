@@ -30,12 +30,12 @@ export default function Leaderboard() {
           ← {lang === 'EN' ? 'Back to FutureArchive' : 'FutureArchive\'e Dön'}
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2">{lang === 'EN' ? 'Top Prophets' : 'En İyi Peygamberler'}</h1>
-        <p className="text-gray-400 mb-8">{lang === 'EN' ? 'The most accurate predictors in the archive.' : 'Arşivdeki en doğru tahmin edenler.'}</p>
+        <h1 className="text-3xl font-bold mb-2">{lang === 'EN' ? 'Top Prophets' : 'En İyi Vizyonerler'}</h1>
+          <p className="text-gray-400 mb-8">{lang === 'EN' ? 'The most accurate predictors in the archive.' : 'Arşivdeki en doğru tahmin edenler.'}</p>
 
         <div className="flex flex-col gap-3">
           {prophets.length === 0 ? (
-            <p className="text-gray-500 text-center py-10">{lang === 'EN' ? 'No prophets yet.' : 'Henüz peygamber yok.'}</p>
+            <p className="text-gray-500 text-center py-10">{lang === 'EN' ? 'No prophets yet.' : 'Henüz Vizyoner yok.'}</p>
           ) : (
             prophets.map((p, i) => (
               <div key={p.username} className="flex items-center justify-between border border-white/10 rounded-xl px-5 py-4 bg-white/5 hover:border-white/20 transition">

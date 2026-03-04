@@ -116,7 +116,7 @@ export default function Categories() {
         {prophets.length > 0 && (
           <div className="border border-white/10 rounded-xl p-5 bg-white/5 mb-8">
             <h2 className="text-sm font-semibold text-gray-400 mb-3">
-              🏆 {lang === 'EN' ? `Top Prophets in ${selected}` : `${selected} Kategorisinde En İyi Peygamberler`}
+              🏆 {lang === 'EN' ? `Top Prophets in ${selected}` : `${selected} Kategorisinde En İyi Vizyonerler`}
             </h2>
             <div className="flex flex-col gap-2">
               {prophets.map((p: any, i) => (

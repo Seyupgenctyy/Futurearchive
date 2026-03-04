@@ -85,12 +85,24 @@ useEffect(() => {
       .then(({ data }) => { if (data) setUnlocked(data) })
 
     // Top prophets
-    supabase
-      .from('profiles')
-      .select('username, prophet_score')
-      .order('prophet_score', { ascending: false })
-      .limit(5)
-      .then(({ data }) => { if (data) setProphets(data) })
+supabase
+  .from('predictions')
+  .select('user_id, profiles(username)')
+  .eq('status', 'correct')
+  .then(({ data }) => {
+    if (!data) return
+    const countMap: Record<string, { username: string; correct: number }> = {}
+    data.forEach((p: any) => {
+      if (!p.profiles) return
+      const key = p.user_id
+      if (!countMap[key]) countMap[key] = { username: p.profiles.username, correct: 0 }
+      countMap[key].correct += 1
+    })
+    const sorted = Object.values(countMap)
+      .sort((a, b) => b.correct - a.correct)
+      .slice(0, 5)
+    setProphets(sorted)
+  })
 
     // Total count
     supabase
@@ -244,7 +256,7 @@ useEffect(() => {
                   <span className="text-lg">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
                   <span className="text-sm font-medium">@{p.username}</span>
                 </div>
-                <span className="text-yellow-400 text-sm font-bold">⚡ {p.prophet_score} pts</span>
+                <span className="text-green-400 text-xs">✅ {p.correct} correct</span>
               </div>
             ))
           )}

@@ -35,24 +35,30 @@ export default function Profile() {
 
       if (predictionsData) setPredictions(predictionsData)
 
-      const { data: allProfiles } = await supabase
-        .from('profiles')
-        .select('id, prophet_score')
-        .order('prophet_score', { ascending: false })
+      // Rank: doğru tahmin sayısına göre
+      const { data: allPreds } = await supabase
+        .from('predictions')
+        .select('user_id')
+        .eq('status', 'correct')
 
-      if (allProfiles) {
-        const userRank = allProfiles.findIndex(p => p.id === data.user.id) + 1
-        setRank(userRank)
+      if (allPreds) {
+        const countMap: Record<string, number> = {}
+        allPreds.forEach((p: any) => {
+          countMap[p.user_id] = (countMap[p.user_id] || 0) + 1
+        })
+        const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1])
+        const userRank = sorted.findIndex(([id]) => id === data.user.id) + 1
+        setRank(userRank || sorted.length + 1)
       }
     })
   }, [])
 
-  const totalPredictions = predictions.length
+  const totalPredictions = predictions.filter(p => p.status !== 'pending_payment').length
   const correctPredictions = predictions.filter(p => p.status === 'correct').length
   const wrongPredictions = predictions.filter(p => p.status === 'wrong').length
   const sealedPredictions = predictions.filter(p => p.is_sealed).length
-  const accuracy = totalPredictions > 0
-    ? Math.round((correctPredictions / (correctPredictions + wrongPredictions || 1)) * 100)
+  const accuracy = (correctPredictions + wrongPredictions) > 0
+    ? Math.round((correctPredictions / (correctPredictions + wrongPredictions)) * 100)
     : 0
 
   const getBadges = () => {
@@ -68,7 +74,7 @@ export default function Profile() {
   }
 
   const handleShareProfile = () => {
-    const text = `Check out my FutureArchive profile!\n@${profile?.username}\nProphet Score: ${profile?.prophet_score}\nAccuracy: ${accuracy}%\nGlobal Rank: #${rank}\n\n👉 futurearchive.vercel.app`
+    const text = `Check out my FutureArchive profile!\n@${profile?.username}\nCorrect Predictions: ${correctPredictions}\nAccuracy: ${accuracy}%\nGlobal Rank: #${rank}\n\n👉 futurearchive.vercel.app`
     if (navigator.share) {
       navigator.share({ title: 'My FutureArchive Profile', text, url: 'https://futurearchive.vercel.app' })
     } else {
@@ -79,7 +85,7 @@ export default function Profile() {
   }
 
   const handleSharePrediction = (p: any) => {
-    const text = `🎯 I predicted this on FutureArchive!\n\n"${p.text}"\n\nCategory: ${p.category}\nTarget Date: ${p.target_date}\nProphet Score: ${profile?.prophet_score} pts\n\n👉 futurearchive.vercel.app`
+    const text = `🎯 I predicted this on FutureArchive!\n\n"${p.text}"\n\nCategory: ${p.category}\nTarget Date: ${p.target_date}\n\n👉 futurearchive.vercel.app`
     if (navigator.share) {
       navigator.share({ title: 'I predicted this on FutureArchive!', text, url: 'https://futurearchive.vercel.app' })
     } else {
@@ -116,12 +122,12 @@ export default function Profile() {
           {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
-              <div className="text-3xl font-bold text-yellow-400">⚡ {profile?.prophet_score || 0}</div>
-              <div className="text-gray-500 text-xs mt-1">Prophet Score</div>
-            </div>
-            <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
               <div className="text-3xl font-bold">#{rank || '?'}</div>
               <div className="text-gray-500 text-xs mt-1">Global Rank</div>
+            </div>
+            <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
+              <div className="text-3xl font-bold text-green-400">{correctPredictions}</div>
+              <div className="text-gray-500 text-xs mt-1">Correct</div>
             </div>
             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
               <div className="text-3xl font-bold">{accuracy}%</div>
@@ -129,16 +135,20 @@ export default function Profile() {
             </div>
           </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
-             <div className="text-3xl font-bold">#{rank || '?'}</div>
-             <div className="text-gray-500 text-xs mt-1">Global Rank</div>
-           </div>
-          <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
-            <div className="text-3xl font-bold">{accuracy}%</div>
-              <div className="text-gray-500 text-xs mt-1">Accuracy</div>
-             </div>
-           </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
+              <div className="text-xl font-bold">{totalPredictions}</div>
+              <div className="text-gray-500 text-xs mt-1">Total</div>
+            </div>
+            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
+              <div className="text-xl font-bold text-green-400">{correctPredictions}</div>
+              <div className="text-gray-500 text-xs mt-1">Correct</div>
+            </div>
+            <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
+              <div className="text-xl font-bold text-red-400">{wrongPredictions}</div>
+              <div className="text-gray-500 text-xs mt-1">Wrong</div>
+            </div>
+          </div>
         </div>
 
         {/* Rozetler */}

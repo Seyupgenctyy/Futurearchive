@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import PredictionCard from '@/components/PredictionCard'
+import NotificationBell from '@/components/NotificationBell'
 
 const content = {
   EN: {
@@ -149,6 +150,7 @@ supabase
           </Link>
           {user ? (
             <div className="flex items-center gap-4">
+              <NotificationBell userId={user.id} />
             <Link href="/profile" className="flex items-center gap-2 border border-white/10 px-3 py-1.5 rounded-lg hover:border-white/30 transition">
             <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">
             {user.email?.charAt(0).toUpperCase()}

@@ -35,7 +35,6 @@ export default function Profile() {
 
       if (predictionsData) setPredictions(predictionsData)
 
-      // Rank: doğru tahmin sayısına göre
       const { data: allPreds } = await supabase
         .from('predictions')
         .select('user_id')
@@ -119,15 +118,11 @@ export default function Profile() {
             </button>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          {/* Üst Stats — Rank, Accuracy */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
               <div className="text-3xl font-bold">#{rank || '?'}</div>
               <div className="text-gray-500 text-xs mt-1">Global Rank</div>
-            </div>
-            <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
-              <div className="text-3xl font-bold text-green-400">{correctPredictions}</div>
-              <div className="text-gray-500 text-xs mt-1">Correct</div>
             </div>
             <div className="text-center border border-white/10 rounded-xl p-4 bg-white/5">
               <div className="text-3xl font-bold">{accuracy}%</div>
@@ -135,6 +130,7 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* Alt Stats — Total, Correct, Wrong */}
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center border border-white/10 rounded-xl p-3 bg-white/5">
               <div className="text-xl font-bold">{totalPredictions}</div>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 interface PredictionCardProps {
   prediction: {
@@ -123,7 +124,9 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
           <span>Sealed until {p.target_date}</span>
         </div>
       ) : (
-        <p className="text-white leading-relaxed">{p.text}</p>
+        <Link href={`/prediction/${p.id}`} className="text-white leading-relaxed hover:text-gray-300 transition cursor-pointer block">
+           {p.text}
+      </Link>
       )}
 
       {/* Footer */}

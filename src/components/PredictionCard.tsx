@@ -20,7 +20,12 @@ interface PredictionCardProps {
 }
 
 export default function PredictionCard({ prediction: p, showVotes = true }: PredictionCardProps) {
-  const [voted, setVoted] = useState(false)
+  const [voted, setVoted] = useState(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(`voted_${p.id}`) === 'true'
+  }
+  return false
+})
   const [votes, setVotes] = useState({
     correct: p.votes_correct || 0,
     wrong: p.votes_wrong || 0
@@ -31,6 +36,7 @@ export default function PredictionCard({ prediction: p, showVotes = true }: Pred
   const handleVote = async (type: 'correct' | 'wrong') => {
     if (voted) return
     setVoted(true)
+    localStorage.setItem(`voted_${p.id}`, 'true')
 
     const update = type === 'correct'
       ? { votes_correct: votes.correct + 1 }

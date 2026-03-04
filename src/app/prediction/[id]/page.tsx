@@ -8,7 +8,12 @@ export default function PredictionDetail() {
   const { id } = useParams()
   const [prediction, setPrediction] = useState<any>(null)
   const [notFound, setNotFound] = useState(false)
-  const [voted, setVoted] = useState(false)
+  const [voted, setVoted] = useState(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(`voted_${id}`) === 'true'
+  }
+  return false
+  })
   const [votes, setVotes] = useState({ correct: 0, wrong: 0 })
   const [lang, setLang] = useState<'EN' | 'TR'>('EN')
   const [copied, setCopied] = useState(false)
@@ -34,6 +39,7 @@ export default function PredictionDetail() {
   const handleVote = async (type: 'correct' | 'wrong') => {
     if (voted) return
     setVoted(true)
+    localStorage.setItem(`voted_${id}`, 'true')
     const update = type === 'correct'
       ? { votes_correct: votes.correct + 1 }
       : { votes_wrong: votes.wrong + 1 }

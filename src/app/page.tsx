@@ -254,7 +254,9 @@ supabase
               <div key={p.username} className="flex items-center justify-between border border-white/10 rounded-xl px-5 py-3 bg-white/5">
                 <div className="flex items-center gap-3">
                   <span className="text-lg">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
-                  <span className="text-sm font-medium">@{p.username}</span>
+                  <Link href={`/profile/${p.username}`} className="text-sm font-medium hover:text-gray-300 transition">
+                     @{p.username}
+                 </Link>
                 </div>
                 <span className="text-green-400 text-xs">✅ {p.correct} correct</span>
               </div>

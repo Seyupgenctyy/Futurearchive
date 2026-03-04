@@ -62,7 +62,9 @@ export default function Leaderboard() {
               <div key={p.username} className="flex items-center justify-between border border-white/10 rounded-xl px-5 py-4 bg-white/5 hover:border-white/20 transition">
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">{medals[i] || `#${i + 1}`}</span>
-                  <span className="font-medium">@{p.username}</span>
+                  <Link href={`/profile/${p.username}`} className="font-medium hover:text-gray-300 transition">
+                   @{p.username}
+                </Link>
                 </div>
                 <span className="text-green-400 font-bold">✅ {p.correct} {lang === 'EN' ? 'correct' : 'doğru'}</span>
               </div>

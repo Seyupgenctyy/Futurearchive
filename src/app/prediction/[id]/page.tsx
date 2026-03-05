@@ -154,8 +154,8 @@ export default function PredictionDetail() {
           {(votes.correct > 0 || votes.wrong > 0) && (
             <div className="mb-6">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>✅ {votes.correct} {lang === 'EN' ? 'votes correct' : 'doğru oyu'}</span>
-                <span>❌ {votes.wrong} {lang === 'EN' ? 'votes wrong' : 'yanlış oyu'}</span>
+                <span>✅ {votes.correct} {lang === 'EN' ? votes.correct === 1 ? 'vote correct' : 'votes correct' : 'doğru oy'}</span>
+                <span>❌ {votes.wrong} {lang === 'EN' ? votes.wrong === 1 ? 'vote wrong' : 'votes wrong' : 'yanlış oy'}</span>
               </div>
               <div className="w-full bg-white/5 rounded-full h-2">
                 <div

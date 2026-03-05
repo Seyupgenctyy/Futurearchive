@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Comments from '@/components/Comments'
 
 export default function PredictionDetail() {
   const { id } = useParams()
@@ -173,6 +174,7 @@ export default function PredictionDetail() {
           >
             {copied ? '✅ Link Copied!' : `🔗 ${lang === 'EN' ? 'Share this prediction' : 'Bu tahmini paylaş'}`}
           </button>
+          <Comments predictionId={id as string} />
         </div>
 
         {/* Arşiv Notu */}

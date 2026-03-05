@@ -19,7 +19,6 @@ const allCategories = [
 export default function Categories() {
   const [selected, setSelected] = useState('Technology')
   const [predictions, setPredictions] = useState<any[]>([])
-  const [prophets, setProphets] = useState<any[]>([])
   const [langFilter, setLangFilter] = useState<'ALL' | 'EN' | 'TR'>('ALL')
   const [lang, setLang] = useState<'EN' | 'TR'>('EN')
 
@@ -30,7 +29,6 @@ export default function Categories() {
 
   useEffect(() => {
     fetchPredictions()
-    fetchTopProphets()
   }, [selected, langFilter])
 
   const fetchPredictions = async () => {
@@ -47,28 +45,6 @@ export default function Categories() {
 
     const { data } = await query
     if (data) setPredictions(data)
-  }
-
-  const fetchTopProphets = async () => {
-    const { data } = await supabase
-      .from('predictions')
-      .select('user_id, profiles(username, prophet_score)')
-      .eq('category', selected)
-      .eq('status', 'correct')
-
-    if (data) {
-      const scoreMap: Record<string, any> = {}
-      data.forEach((p: any) => {
-        if (p.profiles) {
-          const key = p.user_id
-          if (!scoreMap[key]) scoreMap[key] = p.profiles
-        }
-      })
-      const sorted = Object.values(scoreMap)
-        .sort((a: any, b: any) => b.prophet_score - a.prophet_score)
-        .slice(0, 3)
-      setProphets(sorted)
-    }
   }
 
   return (
@@ -113,25 +89,6 @@ export default function Categories() {
           ))}
         </div>
 
-        {prophets.length > 0 && (
-          <div className="border border-white/10 rounded-xl p-5 bg-white/5 mb-8">
-            <h2 className="text-sm font-semibold text-gray-400 mb-3">
-              🏆 {lang === 'EN' ? `Top Prophets in ${selected}` : `${selected} Kategorisinde En İyi Vizyonerler`}
-            </h2>
-            <div className="flex flex-col gap-2">
-              {prophets.map((p: any, i) => (
-                <div key={p.username} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span>{['🥇','🥈','🥉'][i]}</span>
-                    <span className="text-sm">@{p.username}</span>
-                  </div>
-                  <span className="text-yellow-400 text-xs">⚡ {p.prophet_score} pts</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="flex flex-col gap-4">
           {predictions.length === 0 ? (
             <p className="text-gray-500 text-center py-10">
@@ -139,7 +96,7 @@ export default function Categories() {
             </p>
           ) : (
             predictions.map((p) => (
-              <PredictionCard key={p.id} prediction={p} showVotes={true} />
+              <PredictionCard key={p.id} prediction={p} showVotes={false} />
             ))
           )}
         </div>

@@ -22,10 +22,8 @@ const content = {
     ],
     recentTitle: 'Recent Predictions',
     unlockedTitle: '🔓 Unlocked Today',
-    leaderTitle: '⚡ Top Prophets',
     noUnlocked: 'No predictions unlocking today.',
-    noProphets: 'No prophets yet.',
-    stats: ['Predictions Archived', 'Active Prophets', 'Unlocked Today'],
+    stats: ['Predictions Archived', 'Active Users', 'Unlocked Today'],
   },
   TR: {
     headline: 'Yaz. Kilitle. Kanıtla.',
@@ -42,10 +40,8 @@ const content = {
     ],
     recentTitle: 'Son Tahminler',
     unlockedTitle: '🔓 Bugün Açılanlar',
-    leaderTitle: '⚡ En İyi Vizyonerler',
     noUnlocked: 'Bugün açılan tahmin yok.',
-    noProphets: 'Henüz Vizyoner yok.',
-    stats: ['Arşivlenen Tahmin', 'Aktif Vizyoner', 'Bugün Açılan'],
+    stats: ['Arşivlenen Tahmin', 'Aktif Kullanıcı', 'Bugün Açılan'],
   }
 }
 
@@ -54,8 +50,8 @@ export default function Home() {
   const [lang, setLang] = useState<'EN' | 'TR'>('EN')
   const [predictions, setPredictions] = useState<any[]>([])
   const [unlocked, setUnlocked] = useState<any[]>([])
-  const [prophets, setProphets] = useState<any[]>([])
   const [totalPredictions, setTotalPredictions] = useState(0)
+  const [totalUsers, setTotalUsers] = useState(0)
   const [predictionsLoading, setPredictionsLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = content[lang]
@@ -72,15 +68,15 @@ export default function Home() {
     })
 
     supabase
-  .from('predictions')
-  .select('*, profiles(username)')
-  .eq('status', 'active')
-  .order('created_at', { ascending: false })
-  .limit(5)
-  .then(({ data }) => {
-    if (data) setPredictions(data)
-    setPredictionsLoading(false)
-  })
+      .from('predictions')
+      .select('*, profiles(username)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (data) setPredictions(data)
+        setPredictionsLoading(false)
+      })
 
     const today = new Date().toISOString().split('T')[0]
     supabase
@@ -91,27 +87,13 @@ export default function Home() {
 
     supabase
       .from('predictions')
-      .select('user_id, profiles(username)')
-      .eq('status', 'correct')
-      .then(({ data }) => {
-        if (!data) return
-        const countMap: Record<string, { username: string; correct: number }> = {}
-        data.forEach((p: any) => {
-          if (!p.profiles) return
-          const key = p.user_id
-          if (!countMap[key]) countMap[key] = { username: p.profiles.username, correct: 0 }
-          countMap[key].correct += 1
-        })
-        const sorted = Object.values(countMap)
-          .sort((a, b) => b.correct - a.correct)
-          .slice(0, 5)
-        setProphets(sorted)
-      })
-
-    supabase
-      .from('predictions')
       .select('id', { count: 'exact' })
       .then(({ count }) => { if (count) setTotalPredictions(count) })
+
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact' })
+      .then(({ count }) => { if (count) setTotalUsers(count) })
   }, [])
 
   const handleLogout = async () => {
@@ -142,9 +124,6 @@ export default function Home() {
           </button>
           <Link href="/categories" className="text-gray-400 hover:text-white transition text-sm">
             {lang === 'EN' ? 'Categories' : 'Kategoriler'}
-          </Link>
-          <Link href="/leaderboard" className="text-gray-400 hover:text-white transition text-sm">
-            {lang === 'EN' ? 'Leaderboard' : 'Sıralama'}
           </Link>
           <Link href="/unlocked" className="text-gray-400 hover:text-white transition text-sm">
             {lang === 'EN' ? 'Unlocked Today' : 'Bugün Açılanlar'}
@@ -200,9 +179,6 @@ export default function Home() {
             <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
               {lang === 'EN' ? 'Categories' : 'Kategoriler'}
             </Link>
-            <Link href="/leaderboard" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
-              {lang === 'EN' ? 'Leaderboard' : 'Sıralama'}
-            </Link>
             <Link href="/unlocked" onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white transition text-sm">
               {lang === 'EN' ? 'Unlocked Today' : 'Bugün Açılanlar'}
             </Link>
@@ -257,7 +233,7 @@ export default function Home() {
           <div className="text-gray-500 text-sm mt-1">{t.stats[0]}</div>
         </div>
         <div className="text-center">
-          <div className="text-4xl font-bold">{prophets.length}+</div>
+          <div className="text-4xl font-bold">{totalUsers}+</div>
           <div className="text-gray-500 text-sm mt-1">{t.stats[1]}</div>
         </div>
         <div className="text-center">
@@ -301,49 +277,22 @@ export default function Home() {
 
       {/* Recent Predictions */}
       <section className="max-w-3xl mx-auto px-4 pb-20">
-      <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
-      {predictionsLoading ? (
-     <LoadingSkeleton />
+        <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
+        {predictionsLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {predictions.length === 0 ? (
+              <p className="text-gray-600 text-sm">
+                {lang === 'EN' ? 'No predictions yet.' : 'Henüz tahmin yok.'}
+              </p>
             ) : (
-    <div className="flex flex-col gap-4">
-      {predictions.length === 0 ? (
-        <p className="text-gray-600 text-sm">
-          {lang === 'EN' ? 'No predictions yet.' : 'Henüz tahmin yok.'}
-        </p>
-           ) : (
-        predictions.map((p) => (
-          <PredictionCard key={p.id} prediction={p} showVotes={true} />
-        ))
-      )}
-    </div>
-  )}
-       </section>
-
-      {/* Leaderboard Preview */}
-      <section className="max-w-3xl mx-auto px-4 pb-20">
-        <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.leaderTitle}</h2>
-        <div className="flex flex-col gap-3">
-          {prophets.length === 0 ? (
-            <p className="text-gray-600 text-sm">{t.noProphets}</p>
-          ) : (
-            prophets.map((p, i) => (
-              <div key={p.username} className="flex items-center justify-between border border-white/10 rounded-xl px-5 py-3 bg-white/5">
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
-                  <Link href={`/profile/${p.username}`} className="text-sm font-medium hover:text-gray-300 transition">
-                    @{p.username}
-                  </Link>
-                </div>
-                <span className="text-green-400 text-xs">✅ {p.correct} correct</span>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="text-center mt-6">
-          <Link href="/leaderboard" className="text-gray-400 text-sm hover:text-white transition">
-            {lang === 'EN' ? 'View full leaderboard →' : 'Tüm sıralamayı gör →'}
-          </Link>
-        </div>
+              predictions.map((p) => (
+                <PredictionCard key={p.id} prediction={p} showVotes={false} />
+              ))
+            )}
+          </div>
+        )}
       </section>
 
       {/* Footer */}

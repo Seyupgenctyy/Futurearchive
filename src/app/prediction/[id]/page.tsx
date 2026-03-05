@@ -9,13 +9,6 @@ export default function PredictionDetail() {
   const { id } = useParams()
   const [prediction, setPrediction] = useState<any>(null)
   const [notFound, setNotFound] = useState(false)
-  const [voted, setVoted] = useState(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(`voted_${id}`) === 'true'
-  }
-  return false
-  })
-  const [votes, setVotes] = useState({ correct: 0, wrong: 0 })
   const [lang, setLang] = useState<'EN' | 'TR'>('EN')
   const [copied, setCopied] = useState(false)
 
@@ -34,18 +27,6 @@ export default function PredictionDetail() {
 
     if (!data) { setNotFound(true); return }
     setPrediction(data)
-    setVotes({ correct: data.votes_correct || 0, wrong: data.votes_wrong || 0 })
-  }
-
-  const handleVote = async (type: 'correct' | 'wrong') => {
-    if (voted) return
-    setVoted(true)
-    localStorage.setItem(`voted_${id}`, 'true')
-    const update = type === 'correct'
-      ? { votes_correct: votes.correct + 1 }
-      : { votes_wrong: votes.wrong + 1 }
-    await supabase.from('predictions').update(update).eq('id', id)
-    setVotes(prev => ({ ...prev, [type]: prev[type] + 1 }))
   }
 
   const handleShare = () => {
@@ -127,46 +108,6 @@ export default function PredictionDetail() {
             <span>{lang === 'EN' ? 'Unlocks:' : 'Açılış:'} {prediction.target_date}</span>
           </div>
 
-          {/* Oy Butonları */}
-          {prediction.status === 'active' && !prediction.is_sealed && (
-            <div className="flex gap-3 mb-6">
-              <button
-                onClick={() => handleVote('correct')}
-                disabled={voted}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium border transition ${
-                  voted ? 'opacity-50 cursor-not-allowed border-white/5 text-gray-600' : 'border-green-500/30 text-green-400 hover:bg-green-500/10'
-                }`}
-              >
-                ✅ {lang === 'EN' ? 'Correct' : 'Doğru'} ({votes.correct})
-              </button>
-              <button
-                onClick={() => handleVote('wrong')}
-                disabled={voted}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium border transition ${
-                  voted ? 'opacity-50 cursor-not-allowed border-white/5 text-gray-600' : 'border-red-500/30 text-red-400 hover:bg-red-500/10'
-                }`}
-              >
-                ❌ {lang === 'EN' ? 'Wrong' : 'Yanlış'} ({votes.wrong})
-              </button>
-            </div>
-          )}
-
-          {/* Oy Sonuçları */}
-          {(votes.correct > 0 || votes.wrong > 0) && (
-            <div className="mb-6">
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>✅ {votes.correct} {lang === 'EN' ? votes.correct === 1 ? 'vote correct' : 'votes correct' : 'doğru oy'}</span>
-                <span>❌ {votes.wrong} {lang === 'EN' ? votes.wrong === 1 ? 'vote wrong' : 'votes wrong' : 'yanlış oy'}</span>
-              </div>
-              <div className="w-full bg-white/5 rounded-full h-2">
-                <div
-                  className="bg-green-400 h-2 rounded-full transition-all"
-                  style={{ width: `${Math.round((votes.correct / (votes.correct + votes.wrong)) * 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
-
           {/* Paylaş Butonu */}
           <button
             onClick={handleShare}
@@ -174,6 +115,7 @@ export default function PredictionDetail() {
           >
             {copied ? '✅ Link Copied!' : `🔗 ${lang === 'EN' ? 'Share this prediction' : 'Bu tahmini paylaş'}`}
           </button>
+
           <Comments predictionId={id as string} />
         </div>
 

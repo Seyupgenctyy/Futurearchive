@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import PredictionCard from '@/components/PredictionCard'
+import LoadingSkeleton from '@/components/LoadingSkeleton'
 import NotificationBell from '@/components/NotificationBell'
 
 const content = {
@@ -55,6 +56,7 @@ export default function Home() {
   const [unlocked, setUnlocked] = useState<any[]>([])
   const [prophets, setProphets] = useState<any[]>([])
   const [totalPredictions, setTotalPredictions] = useState(0)
+  const [predictionsLoading, setPredictionsLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = content[lang]
 
@@ -70,12 +72,15 @@ export default function Home() {
     })
 
     supabase
-      .from('predictions')
-      .select('*, profiles(username)')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(5)
-      .then(({ data }) => { if (data) setPredictions(data) })
+  .from('predictions')
+  .select('*, profiles(username)')
+  .eq('status', 'active')
+  .order('created_at', { ascending: false })
+  .limit(5)
+  .then(({ data }) => {
+    if (data) setPredictions(data)
+    setPredictionsLoading(false)
+  })
 
     const today = new Date().toISOString().split('T')[0]
     supabase
@@ -295,14 +300,24 @@ export default function Home() {
       </section>
 
       {/* Recent Predictions */}
-      <section className="max-w-3xl mx-auto px-4 pb-20">
-        <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
-        <div className="flex flex-col gap-4">
-          {predictions.map((p) => (
-            <PredictionCard key={p.id} prediction={p} showVotes={true} />
-          ))}
-        </div>
-      </section>
+<section className="max-w-3xl mx-auto px-4 pb-20">
+  <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
+  {predictionsLoading ? (
+    <LoadingSkeleton />
+  ) : (
+    <div className="flex flex-col gap-4">
+      {predictions.length === 0 ? (
+        <p className="text-gray-600 text-sm">
+          {lang === 'EN' ? 'No predictions yet.' : 'Henüz tahmin yok.'}
+        </p>
+      ) : (
+        predictions.map((p) => (
+          <PredictionCard key={p.id} prediction={p} showVotes={true} />
+        ))
+      )}
+    </div>
+  )}
+</section>
 
       {/* Leaderboard Preview */}
       <section className="max-w-3xl mx-auto px-4 pb-20">

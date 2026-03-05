@@ -22,12 +22,7 @@ interface PredictionCardProps {
 }
 
 export default function PredictionCard({ prediction: p, showVotes = true, onDelete }: PredictionCardProps) {
-  const [voted, setVoted] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`voted_${p.id}`) === 'true'
-    }
-    return false
-  })
+  const [voted, setVoted] = useState(false)
   const [votes, setVotes] = useState({
     correct: p.votes_correct || 0,
     wrong: p.votes_wrong || 0
@@ -40,14 +35,17 @@ export default function PredictionCard({ prediction: p, showVotes = true, onDele
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setCurrentUserId(data.user.id)
+      if (data.user) {
+        setCurrentUserId(data.user.id)
+        setVoted(localStorage.getItem(`voted_${p.id}_${data.user.id}`) === 'true')
+      }
     })
   }, [])
 
   const handleVote = async (type: 'correct' | 'wrong') => {
     if (voted) return
     setVoted(true)
-    localStorage.setItem(`voted_${p.id}`, 'true')
+    localStorage.setItem(`voted_${p.id}_${currentUserId}`, 'true')
     const update = type === 'correct'
       ? { votes_correct: votes.correct + 1 }
       : { votes_wrong: votes.wrong + 1 }

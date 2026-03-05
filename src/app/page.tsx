@@ -122,7 +122,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10 relative">
+      <nav className="flex items-center justify-between px-4 py-4 border-b border-white/10 relative">
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold tracking-tight">FutureArchive</span>
           <span className="text-xs bg-white/10 px-2 py-1 rounded-full text-gray-400">BETA</span>
@@ -300,24 +300,24 @@ export default function Home() {
       </section>
 
       {/* Recent Predictions */}
-<section className="max-w-3xl mx-auto px-4 pb-20">
-  <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
-  {predictionsLoading ? (
-    <LoadingSkeleton />
-  ) : (
+      <section className="max-w-3xl mx-auto px-4 pb-20">
+      <h2 className="text-xl font-semibold mb-6 text-gray-300">{t.recentTitle}</h2>
+      {predictionsLoading ? (
+     <LoadingSkeleton />
+            ) : (
     <div className="flex flex-col gap-4">
       {predictions.length === 0 ? (
         <p className="text-gray-600 text-sm">
           {lang === 'EN' ? 'No predictions yet.' : 'Henüz tahmin yok.'}
         </p>
-      ) : (
+           ) : (
         predictions.map((p) => (
           <PredictionCard key={p.id} prediction={p} showVotes={true} />
         ))
       )}
     </div>
   )}
-</section>
+       </section>
 
       {/* Leaderboard Preview */}
       <section className="max-w-3xl mx-auto px-4 pb-20">

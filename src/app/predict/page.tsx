@@ -9,6 +9,39 @@ const categories = [
   'AI', 'Crypto', 'Turkey', 'Global', 'Crazy Predictions'
 ]
 
+const content = {
+  EN: {
+    title: 'Make a Prediction',
+    subtitle: 'Archive your claim about the future. $1 publishing fee applies.',
+    back: '← Back to FutureArchive',
+    predictionLabel: 'Your Prediction',
+    predictionPlaceholder: 'I predict that...',
+    categoryLabel: 'Category',
+    dateLabel: 'Target Date',
+    languageLabel: 'Language',
+    sealedLabel: '🔒 Sealed Prediction — hidden until the target date',
+    warning: '⚠️ This is not gambling. The $1 fee is a publishing fee to permanently archive your prediction.',
+    submit: 'Archive My Prediction — $1',
+    loading: 'Archiving...',
+    error: 'Please fill in all fields.',
+  },
+  TR: {
+    title: 'Tahmin Yap',
+    subtitle: 'Geleceğe dair iddianı arşivle. $1 yayın ücreti uygulanır.',
+    back: '← FutureArchive\'e Dön',
+    predictionLabel: 'Tahmininiz',
+    predictionPlaceholder: 'Tahminim şu ki...',
+    categoryLabel: 'Kategori',
+    dateLabel: 'Hedef Tarih',
+    languageLabel: 'Dil',
+    sealedLabel: '🔒 Kapalı Tahmin — hedef tarihe kadar gizli kalır',
+    warning: '⚠️ Bu kumar değildir. $1 ücreti, tahmininizi kalıcı olarak arşivlemek için bir yayın ücretidir.',
+    submit: 'Tahminimi Arşivle — $1',
+    loading: 'Arşivleniyor...',
+    error: 'Lütfen tüm alanları doldurun.',
+  }
+}
+
 export default function Predict() {
   const [user, setUser] = useState<any>(null)
   const [text, setText] = useState('')
@@ -18,9 +51,14 @@ export default function Predict() {
   const [isSealed, setIsSealed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [lang, setLang] = useState<'EN' | 'TR'>('EN')
   const router = useRouter()
+  const t = content[lang]
 
   useEffect(() => {
+    const savedLang = localStorage.getItem('lang') as 'EN' | 'TR'
+    if (savedLang) setLang(savedLang)
+
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/login')
       setUser(data.user)
@@ -29,7 +67,7 @@ export default function Predict() {
 
   const handleSubmit = async () => {
     if (!text || !category || !targetDate) {
-      setMessage('Please fill in all fields.')
+      setMessage(t.error)
       return
     }
 
@@ -51,18 +89,19 @@ export default function Predict() {
       setLoading(false)
       return
     }
-    // Archived email gönder
-  await fetch('/api/email', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    type: 'archived',
-    email: user.email,
-    username: user.email?.split('@')[0],
-    predictionText: text,
-    targetDate: targetDate
-  })
-})
+
+    await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'archived',
+        email: user.email,
+        username: user.email?.split('@')[0],
+        predictionText: text,
+        targetDate: targetDate
+      })
+    })
+
     router.push('/predict/success')
     setLoading(false)
   }
@@ -71,17 +110,17 @@ export default function Predict() {
     <main className="min-h-screen bg-[#0a0a0f] text-white px-4 py-12">
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="text-gray-500 text-sm hover:text-white transition mb-8 block">
-          ← Back to FutureArchive
+          {t.back}
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2">Make a Prediction</h1>
-        <p className="text-gray-400 mb-8">Archive your claim about the future. $1 publishing fee applies.</p>
+        <h1 className="text-3xl font-bold mb-2">{t.title}</h1>
+        <p className="text-gray-400 mb-8">{t.subtitle}</p>
 
         <div className="flex flex-col gap-5">
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">Your Prediction</label>
+            <label className="text-sm text-gray-400 mb-2 block">{t.predictionLabel}</label>
             <textarea
-              placeholder="I predict that..."
+              placeholder={t.predictionPlaceholder}
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={4}
@@ -90,7 +129,7 @@ export default function Predict() {
           </div>
 
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">Category</label>
+            <label className="text-sm text-gray-400 mb-2 block">{t.categoryLabel}</label>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <button
@@ -109,7 +148,7 @@ export default function Predict() {
           </div>
 
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">Target Date</label>
+            <label className="text-sm text-gray-400 mb-2 block">{t.dateLabel}</label>
             <input
               type="date"
               value={targetDate}
@@ -119,19 +158,19 @@ export default function Predict() {
           </div>
 
           <div>
-            <label className="text-sm text-gray-400 mb-2 block">Language</label>
+            <label className="text-sm text-gray-400 mb-2 block">{t.languageLabel}</label>
             <div className="flex gap-3">
-              {['EN', 'TR'].map((lang) => (
+              {['EN', 'TR'].map((l) => (
                 <button
-                  key={lang}
-                  onClick={() => setLanguage(lang)}
+                  key={l}
+                  onClick={() => setLanguage(l)}
                   className={`px-6 py-2 rounded-lg text-sm border transition ${
-                    language === lang
+                    language === l
                       ? 'bg-white text-black border-white'
                       : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'
                   }`}
                 >
-                  {lang}
+                  {l}
                 </button>
               ))}
             </div>
@@ -146,12 +185,12 @@ export default function Predict() {
               className="w-4 h-4"
             />
             <label htmlFor="sealed" className="text-sm text-gray-300 cursor-pointer">
-              🔒 Sealed Prediction — hidden until the target date
+              {t.sealedLabel}
             </label>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-xs text-gray-500">
-            ⚠️ This is not gambling. The $1 fee is a publishing fee to permanently archive your prediction.
+            {t.warning}
           </div>
 
           {message && (
@@ -163,7 +202,7 @@ export default function Predict() {
             disabled={loading}
             className="bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
           >
-            {loading ? 'Archiving...' : 'Archive My Prediction — $1'}
+            {loading ? t.loading : t.submit}
           </button>
         </div>
       </div>

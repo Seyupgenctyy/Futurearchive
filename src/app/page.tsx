@@ -8,8 +8,8 @@ import NotificationBell from '@/components/NotificationBell'
 
 const content = {
   EN: {
-    headline: 'Write it. Lock it. Prove it.',
-    subheadline: 'Pay $1 to permanently archive your prediction about the future.',
+    headline: 'Write it. Share it. Prove it.',
+    subheadline: 'Archive your predictions about the future — for free.',
     sub2: 'No gambling. No rewards. Just proof.',
     cta: 'Make a Prediction',
     browse: 'Browse Archive',
@@ -17,7 +17,7 @@ const content = {
     steps: [
       { n: '01', t: 'Write your prediction' },
       { n: '02', t: 'Choose the target date' },
-      { n: '03', t: 'Lock it for $1' },
+      { n: '03', t: 'Archive it for free' },
       { n: '04', t: 'Wait and prove you were right' },
     ],
     recentTitle: 'Recent Predictions',
@@ -26,8 +26,8 @@ const content = {
     stats: ['Predictions Archived', 'Active Users', 'Unlocked Today'],
   },
   TR: {
-    headline: 'Yaz. Kilitle. Kanıtla.',
-    subheadline: 'Geleceğe dair tahminini kalıcı olarak arşivlemek için $1 öde.',
+    headline: 'Yaz. Paylaş. Kanıtla.',
+    subheadline: 'Geleceğe dair tahminlerini ücretsiz olarak arşivle.',
     sub2: 'Kumar yok. Ödül yok. Sadece kanıt.',
     cta: 'Tahmin Yap',
     browse: 'Arşivi Gez',
@@ -35,7 +35,7 @@ const content = {
     steps: [
       { n: '01', t: 'Tahmininizi yazın' },
       { n: '02', t: 'Hedef tarihi seçin' },
-      { n: '03', t: '$1 karşılığında kilitleyin' },
+      { n: '03', t: 'Ücretsiz arşivleyin' },
       { n: '04', t: 'Bekleyin ve haklı olduğunuzu kanıtlayın' },
     ],
     recentTitle: 'Son Tahminler',
@@ -297,7 +297,6 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 text-center py-8 text-gray-600 text-sm">
-        FutureArchive — {lang === 'EN' ? 'This is not gambling. Payment is a publishing fee.' : 'Bu kumar değildir. Ödeme bir yayın ücretidir.'} <br />
         <Link href="/disclaimer" className="text-gray-600 hover:text-gray-400 transition underline">
           Legal Disclaimer
         </Link>

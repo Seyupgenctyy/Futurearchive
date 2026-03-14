@@ -12,7 +12,7 @@ const categories = [
 const content = {
   EN: {
     title: 'Make a Prediction',
-    subtitle: 'Archive your claim about the future. $1 publishing fee applies.',
+    subtitle: 'Archive your claim about the future — completely free.',
     back: '← Back to FutureArchive',
     predictionLabel: 'Your Prediction',
     predictionPlaceholder: 'I predict that...',
@@ -20,23 +20,21 @@ const content = {
     dateLabel: 'Target Date',
     languageLabel: 'Language',
     sealedLabel: '🔒 Sealed Prediction — hidden until the target date',
-    warning: '⚠️ This is not gambling. The $1 fee is a publishing fee to permanently archive your prediction.',
-    submit: 'Archive My Prediction — $1',
+    submit: 'Archive My Prediction',
     loading: 'Archiving...',
     error: 'Please fill in all fields.',
   },
   TR: {
     title: 'Tahmin Yap',
-    subtitle: 'Geleceğe dair iddianı arşivle. $1 yayın ücreti uygulanır.',
-    back: '← FutureArchive\'e Dön',
+    subtitle: 'Geleceğe dair iddianı ücretsiz olarak arşivle.',
+    back: "← FutureArchive'e Dön",
     predictionLabel: 'Tahmininiz',
     predictionPlaceholder: 'Tahminim şu ki...',
     categoryLabel: 'Kategori',
     dateLabel: 'Hedef Tarih',
     languageLabel: 'Dil',
     sealedLabel: '🔒 Kapalı Tahmin — hedef tarihe kadar gizli kalır',
-    warning: '⚠️ Bu kumar değildir. $1 ücreti, tahmininizi kalıcı olarak arşivlemek için bir yayın ücretidir.',
-    submit: 'Tahminimi Arşivle — $1',
+    submit: 'Tahminimi Arşivle',
     loading: 'Arşivleniyor...',
     error: 'Lütfen tüm alanları doldurun.',
   }
@@ -89,18 +87,6 @@ export default function Predict() {
       setLoading(false)
       return
     }
-
-    await fetch('/api/email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'archived',
-        email: user.email,
-        username: user.email?.split('@')[0],
-        predictionText: text,
-        targetDate: targetDate
-      })
-    })
 
     router.push('/predict/success')
     setLoading(false)
@@ -187,10 +173,6 @@ export default function Predict() {
             <label htmlFor="sealed" className="text-sm text-gray-300 cursor-pointer">
               {t.sealedLabel}
             </label>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-xs text-gray-500">
-            {t.warning}
           </div>
 
           {message && (
